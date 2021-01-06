@@ -6,4 +6,7 @@ cmake_minimum_required (VERSION 3.8)
 project ("JSynth")
 
 # Include sub-projects.
+add_subdirectory ("q")
 add_subdirectory ("src")
+
+
