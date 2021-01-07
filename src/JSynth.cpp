@@ -1,9 +1,11 @@
-﻿// JSynth.cpp : Defines the entry point for the application.
-//
+﻿/************************************************
+ *  JSynth.cpp
+ ***********************************************/
 
 #include <iostream>
 #include <set>
 #include <unordered_map>
+#include <vector>
 #include <q/support/literals.hpp>
 #include <q/synth/sin.hpp>
 #include <q/synth/saw.hpp>
@@ -18,10 +20,12 @@ using namespace q::literals;
 
 struct synth : q::port_audio_stream
 {
-    synth() : port_audio_stream(0, 2),
-        _osc{ osc(this->sampling_rate(), 1.0f, ENVELOPE_PARAM, SAW),
-        osc(this->sampling_rate(), 1.02f, ENVELOPE_PARAM, NONE) }
-    {}
+    synth() : port_audio_stream(0, 2)
+    {
+        for (int i = 0; i < NUM_OSCILLATORS; i++) {
+            _osc.push_back(osc(this->sampling_rate(), OSC_TUNE[i], ENVELOPE_PARAM, OSC_TYPES[i]));
+        }
+    }
 
     void process(out_channels const& out)
     {
@@ -39,10 +43,7 @@ struct synth : q::port_audio_stream
             _osc[i].process_remove();
         }        
     }
-
-
-
-    osc _osc[NUM_OSCILLATORS];
+    std::vector<osc> _osc;
 };
 
 struct midi_processor : q::midi::processor

@@ -1,3 +1,11 @@
+/************************************************
+ * osc.hpp:
+ * Contains the oscillator classes which handle
+ * management of current notes being played and
+ * audio output.
+ ***********************************************/
+
+#include <functional>
 #include <set>
 #include <unordered_map>
 #include <q/support/literals.hpp>
@@ -12,10 +20,6 @@
 
 namespace q = cycfi::q;
 using namespace q::literals;
-
-float null_osc(q::phase_iterator phase) {
-    return 0.0f;
-}
 
 struct voice {
     voice() : phase_iterator(1, 1), envelope(1)
@@ -36,7 +40,25 @@ struct osc
         this->sampling_rate = sampling_rate;
         this->pitch_scale = pitch_scale;
         this->env_cfg = env_cfg;
-        
+
+        switch (type)
+        {
+        case NONE:
+            osc_func = [](q::phase_iterator a) { return 0.0f; };
+            break;
+        case SINE:
+            osc_func = q::sin;
+            break;
+        case SAW:
+            osc_func = q::saw;
+            break;
+        case SQR:
+            osc_func = q::square;
+            break;
+        case TRI:
+            osc_func = q::triangle;
+            break;
+        }        
     }
 
     float process_frame()
@@ -44,7 +66,7 @@ struct osc
         float frame = 0.0f;
         for (auto i : keys)
         {
-            frame += q::saw(keys[i.first].phase_iterator++) * keys[i.first].envelope();
+            frame += osc_func(keys[i.first].phase_iterator++) * keys[i.first].envelope();
         }
         return frame / MAX_VOICES;
     }
@@ -78,9 +100,9 @@ struct osc
     };
 
     q::envelope::config env_cfg;
-    std::unordered_map<uint8_t, struct voice> keys; // Current Voice storage.
-    std::set<uint8_t> to_delete; // Delete buffer to avoid deleting mid iteration.
+    std::unordered_map<uint8_t, struct voice> keys;
+    std::set<uint8_t> to_delete;
     uint32_t sampling_rate;
     float pitch_scale;
-    float (*osc_func)(q::phase_iterator);
+    std::function < float (q::phase_iterator) > osc_func;
 };
