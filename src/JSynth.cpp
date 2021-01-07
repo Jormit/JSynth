@@ -11,13 +11,16 @@
 #include <q_io/audio_stream.hpp>
 
 #include "config.hpp"
+#include "osc.hpp"
 
 namespace q = cycfi::q;
 using namespace q::literals;
 
 struct synth : q::port_audio_stream
 {
-    synth() : port_audio_stream(0, 2) 
+    synth() : port_audio_stream(0, 2),
+        _osc{ osc(this->sampling_rate(), 1.0f, ENVELOPE_PARAM, SAW),
+        osc(this->sampling_rate(), 1.02f, ENVELOPE_PARAM, NONE) }
     {}
 
     void process(out_channels const& out)
@@ -26,47 +29,20 @@ struct synth : q::port_audio_stream
         auto right = out[1];
         for (auto frame : out.frames())
         {
-            right[frame] = 0;
-            // Synthesize the sin wave
-            for (auto voice : keys)
-            {
-                right[frame] += q::saw(keys[voice.first]++);
+            float next_out = 0.0f;
+            for (int i = 0; i < NUM_OSCILLATORS; i++) {
+                next_out += _osc[i].process_frame();
             }
-            right[frame] /= MAX_VOICES;
-            left[frame] = right[frame];
+            left[frame] = right[frame] = next_out / NUM_OSCILLATORS;
         }
-        process_remove();
-    }        
-
-    void add_voice(uint8_t key) 
-    {
-        if (keys.size() == MAX_VOICES) 
-        {
-            return;
-        }
-        keys[key] = q::phase_iterator(q::midi::note_frequency(key), this->sampling_rate());
+        for (int i = 0; i < NUM_OSCILLATORS; i++) {
+            _osc[i].process_remove();
+        }        
     }
 
-    void remove_voice(uint8_t key)
-    {
-        if (keys.find(key) == keys.end()) 
-        {
-            return;
-        }
-        to_delete.insert(key);
-    }
 
-    void process_remove()
-    {
-        for (auto elem : to_delete)
-        {
-            keys.erase(elem);
-        }
-        to_delete.clear();
-    }
 
-    std::unordered_map<uint8_t, q::phase_iterator> keys; // Current Voice storage.
-    std::set<uint8_t> to_delete; // Delete buffer to avoid deleting mid iteration.
+    osc _osc[NUM_OSCILLATORS];
 };
 
 struct midi_processor : q::midi::processor
@@ -92,7 +68,9 @@ struct midi_processor : q::midi::processor
                 << '}' << std::endl;
         }        
 
-        this->_synth->add_voice(msg.key());
+        for (int i = 0; i < NUM_OSCILLATORS; i++) {
+            this->_synth->_osc[i].add_voice(msg.key());
+        }
     }
 
     void operator()(q::midi::note_off msg, std::size_t time)
@@ -107,7 +85,9 @@ struct midi_processor : q::midi::processor
                 << '}' << std::endl;
         }       
 
-        this->_synth->remove_voice(msg.key());
+        for (int i = 0; i < NUM_OSCILLATORS; i++) {
+            this->_synth->_osc[i].remove_voice(msg.key());
+        }
     }
 };
 
