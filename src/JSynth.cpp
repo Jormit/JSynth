@@ -32,10 +32,9 @@ struct synth : q::port_audio_stream
             left[frame] = right[frame] = _osc.process_frame();
         }
                    
-        _osc.process_remove();
-        _osc.process_add();        
-        _osc.process_filters();
-         
+        _osc.process_remove();        
+        _osc.process_add();      
+        _osc.process_filters();         
     }
     osc _osc;
 };

@@ -72,9 +72,9 @@ struct osc
             auto _env1 = keys[key.first].envelope1();
             auto _env2 = keys[key.first].envelope2();
             for (int i = 0; i < num; i++) {
-                temp_frame += osc_funcs[i](keys[key.first].phase_iterators[i]++) * _env1;
+                temp_frame += osc_funcs[i](keys[key.first].phase_iterators[i]++);
             }
-            frame += keys[key.first].filter(temp_frame);
+            frame += keys[key.first].filter(temp_frame) * _env1;
         }
         return frame / (normalize_factor);
     }
@@ -87,7 +87,7 @@ struct osc
 
     void add_voice(uint8_t key)
     {
-        adding.push(key);                
+        adding.push(key);
     }
 
     void release_voice(uint8_t key)
@@ -102,13 +102,13 @@ struct osc
     }
 
     void process_add()
-    {
-       
+    {       
         while (adding.size())
         {
             if (keys.size() == max_voices) {
                 if (releasing.size()) {
                     keys.erase(releasing.front());
+                    releasing.pop();
                 }
                 else {
                     adding = std::queue<uint8_t>();
@@ -122,20 +122,16 @@ struct osc
             keys[to_add].envelope1.trigger(1.0f);
             keys[to_add].envelope2.trigger(1.0f);
         }
-
     }
 
     void process_remove()
     {
         if (releasing.size())
         {
-            while (keys[releasing.front()].envelope1.state() == 0)
+            while (releasing.size() && keys[releasing.front()].envelope1.state() == 0)
             {
                 keys.erase(releasing.front());
                 releasing.pop();
-                if (!releasing.size()) {
-                    break;
-                }
             }
         }
     };
