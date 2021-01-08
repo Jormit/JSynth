@@ -23,5 +23,5 @@ void display_config()
 	for (int i = 0; i < NUM_OSCILLATORS; i++) {
 		printf("oscillator %d: %s\n", i + 1, osc_types[i]);
 	} 
-	printf("envelope: %f", ENV_ATTACK);
+	printf("envelope: %f", ENV1_ATTACK);
 }

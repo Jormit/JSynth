@@ -3,14 +3,11 @@
  ***********************************************/
 
 #include <iostream>
-#include <set>
-#include <unordered_map>
 #include <vector>
 #include <q/support/literals.hpp>
-#include <q/synth/sin.hpp>
-#include <q/synth/saw.hpp>
 #include <q_io/midi_stream.hpp>
 #include <q_io/audio_stream.hpp>
+#include <q/fx/lowpass.hpp>
 
 #include "config.hpp"
 #include "osc.hpp"
@@ -21,10 +18,10 @@ using namespace q::literals;
 
 struct synth : q::port_audio_stream
 {
-    synth() : port_audio_stream(0, 2)
+    synth() : port_audio_stream(0, 2), filter(FILTER_CUTOFF, FILTER_Q, this->sampling_rate())
     {
         for (int i = 0; i < NUM_OSCILLATORS; i++) {
-            _osc.push_back(osc(this->sampling_rate(), OSC_TUNE[i], ENVELOPE_PARAM, OSC_TYPES[i]));
+            _osc.push_back(osc(this->sampling_rate(), OSC_TUNE[i], ENV1_PARAM, OSC_TYPES[i]));
         }
     }
 
@@ -38,13 +35,14 @@ struct synth : q::port_audio_stream
             for (int i = 0; i < NUM_OSCILLATORS; i++) {
                 next_out += _osc[i].process_frame();
             }
-            left[frame] = right[frame] = next_out / NUM_OSCILLATORS;
+            left[frame] = right[frame] = filter(next_out / NUM_OSCILLATORS);
         }
         for (int i = 0; i < NUM_OSCILLATORS; i++) {
             _osc[i].process_remove();
         }        
     }
     std::vector<osc> _osc;
+    q::reso_filter filter;
 };
 
 struct midi_processor : q::midi::processor
