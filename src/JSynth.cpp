@@ -95,7 +95,7 @@ int main()
     q::midi_input_stream stream;
     if (stream.is_valid())
     {
-        while (true)
+        while (true)            
             stream.process(midi_processor(&synth));
     }
     return 0;
