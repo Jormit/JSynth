@@ -7,6 +7,7 @@
 
 #include <functional>
 #include <set>
+#include <queue>
 #include <unordered_map>
 #include <q/support/literals.hpp>
 #include <q/synth/saw.hpp>
@@ -73,35 +74,42 @@ struct osc
 
     void add_voice(uint8_t key)
     {
-        if (keys.size() == MAX_VOICES)
-        {
+        if (keys.size() == MAX_VOICES && !releasing.size())
+        {          
             return;
         }
         keys[key] = voice(q::midi::note_frequency(key) * pitch_scale, this->sampling_rate, env_cfg);
         keys[key].envelope.trigger(1.0f);
     }
 
-    void remove_voice(uint8_t key)
+    void release_voice(uint8_t key)
     {
         if (keys.find(key) == keys.end())
         {
             return;
         }
-        to_delete.insert(key);
+        releasing.push(key);
+        keys[key].envelope.release();
     }
 
     void process_remove()
     {
-        for (auto elem : to_delete)
+        if (releasing.size())
         {
-            keys.erase(elem);
-        }
-        to_delete.clear();
+            while (keys[releasing.front()].envelope.state() == 0)
+            {
+                keys.erase(releasing.front());
+                releasing.pop();
+                if (!releasing.size()) {
+                    break;
+                }
+            }
+        }        
     };
 
     q::envelope::config env_cfg;
     std::unordered_map<uint8_t, struct voice> keys;
-    std::set<uint8_t> to_delete;
+    std::queue<uint8_t> releasing;
     uint32_t sampling_rate;
     float pitch_scale;
     std::function < float (q::phase_iterator) > osc_func;

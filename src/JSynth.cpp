@@ -14,6 +14,7 @@
 
 #include "config.hpp"
 #include "osc.hpp"
+#include "display.hpp"
 
 namespace q = cycfi::q;
 using namespace q::literals;
@@ -87,7 +88,7 @@ struct midi_processor : q::midi::processor
         }       
 
         for (int i = 0; i < NUM_OSCILLATORS; i++) {
-            this->_synth->_osc[i].remove_voice(msg.key());
+            this->_synth->_osc[i].release_voice(msg.key());
         }
     }
 };
@@ -99,6 +100,7 @@ int main()
 
     synth synth{};
     synth.start();
+    display_config();
 
     // Begin MIDI processing loop.
     q::midi_input_stream stream;

@@ -12,12 +12,12 @@
 
 // Oscillator settings
 #define NUM_OSCILLATORS 2
-#define MAX_VOICES 8
+#define MAX_VOICES 4
 const int OSC_TYPES[NUM_OSCILLATORS] = { SAW, SAW };
 const float OSC_TUNE[NUM_OSCILLATORS] = { 1.0f, 1.02f };
 
 // Amplitude envelope
-#define ENV_ATTACK 100_ms
+#define ENV_ATTACK 0.1
 #define ENV_DECAY 1_s
 #define ENV_SUSTAIN_LVL -12_dB
 #define ENV_SUSTAIN_RATE 5_s
