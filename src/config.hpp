@@ -39,6 +39,6 @@ const float OSC_TUNE[NUM_OSCILLATORS] = { 1.0f, 1.02f };
 
 // MIDI settings
 #define MIDI_DEVICE 1
-#define MIDI_DEBUG 0
+#define MIDI_DEBUG 1
 #endif
 
