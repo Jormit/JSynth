@@ -18,10 +18,11 @@ using namespace q::literals;
 
 struct synth : q::port_audio_stream
 {
-    synth() : port_audio_stream(0, 2), filter(FILTER_CUTOFF, FILTER_Q, this->sampling_rate())
+    synth() : port_audio_stream(0, 2)
     {
         for (int i = 0; i < NUM_OSCILLATORS; i++) {
-            _osc.push_back(osc(this->sampling_rate(), OSC_TUNE[i], ENV1_PARAM, OSC_TYPES[i]));
+            _osc.push_back(osc(this->sampling_rate(), OSC_TUNE[i], ENV1_PARAM, ENV2_PARAM, OSC_TYPES[i], 
+                FILTER_CUTOFF, FILTER_Q, FILTER_ENV_MOD));
         }
     }
 
@@ -35,14 +36,14 @@ struct synth : q::port_audio_stream
             for (int i = 0; i < NUM_OSCILLATORS; i++) {
                 next_out += _osc[i].process_frame();
             }
-            left[frame] = right[frame] = filter(next_out / NUM_OSCILLATORS);
+            left[frame] = right[frame] = next_out / NUM_OSCILLATORS;
         }
-        for (int i = 0; i < NUM_OSCILLATORS; i++) {
+        for (int i = 0; i < NUM_OSCILLATORS; i++) {            
             _osc[i].process_remove();
+            _osc[i].process_filters();
         }        
     }
     std::vector<osc> _osc;
-    q::reso_filter filter;
 };
 
 struct midi_processor : q::midi::processor
