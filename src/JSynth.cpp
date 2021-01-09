@@ -9,6 +9,7 @@
 #include <q_io/midi_stream.hpp>
 #include <q_io/audio_stream.hpp>
 #include <q/fx/lowpass.hpp>
+#include <q/fx/waveshaper.hpp>
 
 #include "config.hpp"
 #include "osc.hpp"
@@ -29,7 +30,8 @@ struct synth : q::port_audio_stream
         auto right = out[1];
         for (auto frame : out.frames())
         {
-            left[frame] = right[frame] = _osc.process_frame();
+            auto val = clip_soft(_osc.process_frame());
+            left[frame] = right[frame] = val;
         }
                    
         _osc.process_remove();        
@@ -37,6 +39,7 @@ struct synth : q::port_audio_stream
         _osc.process_filters();         
     }
     osc _osc;
+    q::soft_clip clip_soft;
 };
 
 struct midi_processor : q::midi::processor

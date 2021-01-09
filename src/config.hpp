@@ -14,10 +14,10 @@
 #define NUM_OSCILLATORS 2
 #define MAX_VOICES 4
 const int OSC_TYPES[NUM_OSCILLATORS] = { SAW, SAW };
-const float OSC_TUNE[NUM_OSCILLATORS] = { 1.0f, 1.0f };
+const float OSC_TUNE[NUM_OSCILLATORS] = { 1.0f, 1.02f };
 
 // Filter settings
-#define FILTER_CUTOFF 0.4
+#define FILTER_CUTOFF 0.8
 #define FILTER_Q 0.6
 #define FILTER_ENV_MOD 0
 
