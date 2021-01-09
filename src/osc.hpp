@@ -81,13 +81,14 @@ struct osc
 
     void process_filters() {
         for (auto i : keys) {
-            keys[i.first].filter.cutoff(keys[i.first].envelope2());
+            keys[i.first].filter.cutoff(keys[i.first].envelope2() * filter_cutoff);
         }
     }
 
     void add_voice(uint8_t key)
-    {
+    {        
         adding.push(key);
+        
     }
 
     void release_voice(uint8_t key)
@@ -105,7 +106,7 @@ struct osc
     {       
         while (adding.size())
         {
-            if (keys.size() == max_voices) {
+            if (keys.size() >= max_voices) {
                 if (releasing.size()) {
                     keys.erase(releasing.front());
                     releasing.pop();

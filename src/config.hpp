@@ -14,11 +14,11 @@
 #define NUM_OSCILLATORS 2
 #define MAX_VOICES 4
 const int OSC_TYPES[NUM_OSCILLATORS] = { SAW, SAW };
-const float OSC_TUNE[NUM_OSCILLATORS] = { 1.01f, 1.0f };
+const float OSC_TUNE[NUM_OSCILLATORS] = { 1.0f, 1.0f };
 
 // Filter settings
-#define FILTER_CUTOFF 2000
-#define FILTER_Q 0.7
+#define FILTER_CUTOFF 0.4
+#define FILTER_Q 0.6
 #define FILTER_ENV_MOD 0
 
 // Envelope 1
@@ -38,7 +38,7 @@ const float OSC_TUNE[NUM_OSCILLATORS] = { 1.01f, 1.0f };
 #define ENV2_PARAM {ENV2_ATTACK, ENV2_DECAY, ENV2_SUSTAIN_LVL, ENV2_SUSTAIN_RATE, ENV2_RELEASE_RATE}
 
 // MIDI settings
-#define MIDI_DEVICE 1
+#define MIDI_DEVICE 3
 #define MIDI_DEBUG 1
 #endif
 
